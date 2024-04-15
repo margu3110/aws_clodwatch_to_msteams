@@ -7,18 +7,16 @@ def lambda_handler(event, context):
     webhook_url = os.environ['MS_TEAMS_WEBHOOK_URL']
     
     headers = {'Content-Type': 'application/json; charset=utf-8'}
-    message = {
-        'text': sns_message
-    }
-
-    alarm_name = json.loads(message)['AlarmName']
-    alarm_desc = json.loads(message)['AlarmDescription']
-    new_state = json.loads(message)['NewStateValue']
-    alarm_time = json.loads(message)['StateChangeTime']
-    instance_id = json.loads(message)['Trigger']['Dimensions'][0]['value']
-    region = json.loads(message)['Region']
-    # account_id = context.invoked_function_arn.split(':')[4]
-
+    message = json.loads(sns_message)
+    
+    
+    alarm_name = message['AlarmName']
+    alarm_desc = message['AlarmDescription']
+    new_state = message['NewStateValue']
+    alarm_time = message['StateChangeTime']
+    instance_id = message['Trigger']['Dimensions'][0]['value']
+    region = message['Region']
+  
     # Create url link to view alarm
     alarm_url = f"https://console.aws.amazon.com/cloudwatch/home?region={region}#s=Alarms&alarm={alarm_name}"
     
@@ -30,11 +28,11 @@ def lambda_handler(event, context):
     else:
         colour = "0000FF"
 
-        # Constructing the Teams message payload for an alarm
+    # Constructing the Teams message payload for an alarm
     message_card = {
         "@type": "MessageCard",
         "@context": "http://schema.org/extensions",
-        "themeColor": color,
+        "themeColor": colour,
         "title": f"{alarm_name} {new_state} on {instance_id}",
         "text": f"Alarm description: {alarm_desc}\nCurrent state: {new_state}\nTriggered time: {alarm_time}",
         "potentialAction": [
